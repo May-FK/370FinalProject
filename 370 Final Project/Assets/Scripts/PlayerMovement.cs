@@ -9,6 +9,10 @@ public class PlayerMovement : MonoBehaviour
     public bool isJumping;
     public float raycastDistance;
     public ForceMode appliedForceMode;
+    public float turnSmoothTime = .1f;
+    float turnSmoothVelocity;
+
+    public Transform cam;
 
     private float xAxis;
     private float zAxis;
@@ -28,28 +32,49 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        xAxis = Input.GetAxis("Horizontal");
-        zAxis = Input.GetAxis("Vertical");
+        
 
-        isJumping = Input.GetKeyDown(KeyCode.Space);
-        if(Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hit, raycastDistance))
-        {
-            groundLocation = hit.point;
-            distanceToGround = transform.position.y - groundLocation.y;
-        }
+        
     }
 
     private void FixedUpdate()
     {
-        rb.MovePosition(transform.position + Time.deltaTime * movementSpeed * transform.TransformDirection(xAxis, 0f, zAxis));
-        isGrounded = distanceToGround <= 1f;
-        if (isJumping && isGrounded)
+        xAxis = Input.GetAxisRaw("Horizontal");
+        zAxis = Input.GetAxisRaw("Vertical");
+
+        //isJumping = Input.GetKeyDown(KeyCode.Space);
+        //Debug.Log("isJumping: " + isJumping);
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hit, raycastDistance))
         {
-            StartCoroutine(Jump());
+            groundLocation = hit.point;
+            distanceToGround = transform.position.y - groundLocation.y;
+            //Debug.Log(distanceToGround);
+        }
+
+        Vector3 direction = new Vector3(xAxis, 0f, zAxis);
+        if (direction.magnitude >= .1f)
+        {
+            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + cam.eulerAngles.y;
+            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
+            transform.rotation = Quaternion.Euler(0f, angle, 0f);
+            Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+            rb.MovePosition(transform.position + Time.deltaTime * movementSpeed * moveDir);
+        }
+        
+        //Debug.Log("isGrounded: " + isGrounded);
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            Debug.Log("jump");
+            if (isGrounded)
+            {
+                rb.AddForce(jumpForce * rb.mass * Time.deltaTime * Vector3.up, appliedForceMode);
+                Debug.Log("jumping");
+                //StartCoroutine(Jump());
+            }
         }
     }
 
-    private void JumpForce(float jumpForce, ForceMode forceMode)
+    /*private void JumpForce(float jumpForce, ForceMode forceMode)
     {
         rb.AddForce(jumpForce * rb.mass * Time.deltaTime * Vector3.up, forceMode);
     }
@@ -58,5 +83,5 @@ public class PlayerMovement : MonoBehaviour
         JumpForce(jumpForce, appliedForceMode);
         isGrounded = false;
         yield return new WaitUntil(() => !isJumping);
-    }
+    }*/
 }
