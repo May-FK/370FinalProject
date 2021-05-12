@@ -32,7 +32,7 @@ public class CheesePickup : MonoBehaviour
     }
     private void OnTriggerEnter(Collider col)
     {
-        if (!col.CompareTag("Player")) return;
+        if ((!col.CompareTag("Player")) || (cheeseCollected)) return;
         playerCollided = true;
         collected.Play();
     }
