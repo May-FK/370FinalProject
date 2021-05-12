@@ -39,11 +39,11 @@ public class Jump : MonoBehaviour
         {
             groundLocation = hit.point;
             distanceToGround = transform.position.y - groundLocation.y;
-            Debug.Log(distanceToGround);
+            //Debug.Log(distanceToGround);
         }
 
         isGrounded = (distanceToGround <= .126f);
-        Debug.Log(isGrounded);
+        //Debug.Log(isGrounded);
     }
 
     private void JumpForce(float jumpForce, ForceMode forceMode)

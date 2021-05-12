@@ -11,4 +11,9 @@
     {
         score += 1;
     }
+
+    public static void resetScore()
+    {
+        score = 0;
+    }
 }
